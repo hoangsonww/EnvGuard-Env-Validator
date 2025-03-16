@@ -1,0 +1,42 @@
+{
+  "name": "@hoangsonw/env-guard",
+  "displayName": "Env Guard - Validate & Protect your .env files",
+  "version": "1.0.0",
+  "description": "Protect your .env files from missing or insecure configurations by validating environment variables against a schema and enforcing .env.example.",
+  "main": "dist/index.js",
+  "types": "index.d.ts",
+  "type": "module",
+  "keywords": [
+    "dotenv",
+    "env",
+    "validation",
+    "schema",
+    "missing",
+    "insecure",
+    "env.example"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --coverage",
+    "prepublishOnly": "npm run build",
+    "demo": "node __tests__/demo.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/env-guard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/env-guard/issues"
+  },
+  "homepage": "https://github.com/yourusername/env-guard#readme",
+  "author": "Your Name <you@example.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "dotenv": "^16.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}
