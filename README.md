@@ -223,7 +223,6 @@ Contributions are welcome! Follow these steps:
 4. **Submit a Pull Request**
 
 For major changes, please open an issue first to discuss your ideas.
-
 ---
 
 ## License
