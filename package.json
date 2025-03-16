@@ -1,7 +1,7 @@
 {
   "name": "@hoangsonw/env-guard",
   "displayName": "Env Guard - Validate & Protect your .env files",
-  "version": "1.1.5",
+  "version": "1.2.2",
   "description": "Protect your .env files from missing or insecure configurations by validating environment variables against a schema and enforcing .env.example.",
   "main": "dist/index.js",
   "types": "index.d.ts",
