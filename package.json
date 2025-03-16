@@ -1,7 +1,7 @@
 {
   "name": "@hoangsonw/env-guard",
   "displayName": "Env Guard - Validate & Protect your .env files",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Protect your .env files from missing or insecure configurations by validating environment variables against a schema and enforcing .env.example.",
   "main": "dist/index.js",
   "types": "index.d.ts",
@@ -19,7 +19,8 @@
     "build": "tsc",
     "test": "jest --coverage",
     "prepublishOnly": "npm run build",
-    "demo": "node __tests__/demo.js"
+    "demo": "node __tests__/demo.js",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html}\""
   },
   "repository": {
     "type": "git",
@@ -38,5 +39,8 @@
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@hoangsonw/env-guard": "^1.0.1",
+    "prettier": "^3.5.3"
+  }
 }

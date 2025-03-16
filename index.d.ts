@@ -11,11 +11,11 @@ export interface EnvSchema {
 }
 
 export interface EnvGuardOptions {
-  schema: EnvSchema;                // the schema to validate
-  envFilePath?: string;            // path to .env (default: "./.env")
-  exampleFilePath?: string;        // path to .env.example (default: "./.env.example")
+  schema: EnvSchema; // the schema to validate
+  envFilePath?: string; // path to .env (default: "./.env")
+  exampleFilePath?: string; // path to .env.example (default: "./.env.example")
   allowMissingExampleKeys?: boolean; // if false, warns if .env.example has keys missing in .env
-  throwOnError?: boolean;          // if true, throws an error on missing or insecure
+  throwOnError?: boolean; // if true, throws an error on missing or insecure
 }
 
 export declare function validateEnv(options: EnvGuardOptions): void;

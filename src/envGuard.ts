@@ -9,7 +9,7 @@ export function validateEnv(options: EnvGuardOptions): void {
     envFilePath = "./.env",
     exampleFilePath = "./.env.example",
     allowMissingExampleKeys = false,
-    throwOnError = false
+    throwOnError = false,
   } = options;
 
   console.log(`[EnvGuard] Loading env file: ${envFilePath}`);
@@ -31,7 +31,9 @@ export function validateEnv(options: EnvGuardOptions): void {
     // naive parse
     exampleKeys = parseEnvKeys(exampleContent);
   } else {
-    console.warn(`[EnvGuard] WARNING: .env.example file not found at "${exampleFilePath}"`);
+    console.warn(
+      `[EnvGuard] WARNING: .env.example file not found at "${exampleFilePath}"`,
+    );
   }
 
   console.log("[EnvGuard] Validating environment variables...");
@@ -42,7 +44,12 @@ export function validateEnv(options: EnvGuardOptions): void {
 
   // 2) Compare .env.example keys to process.env (if .env.example exists)
   if (exampleKeys.length > 0) {
-    compareExampleKeys(exampleKeys, allowMissingExampleKeys, errors, throwOnError);
+    compareExampleKeys(
+      exampleKeys,
+      allowMissingExampleKeys,
+      errors,
+      throwOnError,
+    );
   }
 
   if (errors.length > 0) {
@@ -60,7 +67,7 @@ function compareExampleKeys(
   exampleKeys: string[],
   allowMissingExampleKeys: boolean,
   errors: string[],
-  throwOnError: boolean
+  throwOnError: boolean,
 ) {
   for (const exKey of exampleKeys) {
     if (!process.env.hasOwnProperty(exKey)) {
@@ -93,7 +100,7 @@ function compareExampleKeys(
 function checkSchema(
   schema: EnvSchema,
   errors: string[],
-  throwOnError: boolean
+  throwOnError: boolean,
 ) {
   for (const envVar of Object.keys(schema)) {
     const isRequired = schema[envVar].required ?? false;

@@ -10,14 +10,11 @@ beforeAll(() => {
   // Create a mock .env file
   fs.writeFileSync(
     ENV_PATH,
-    `DB_HOST=localhost\nDB_PASSWORD=12345\nDB_USER=admin\n`
+    `DB_HOST=localhost\nDB_PASSWORD=12345\nDB_USER=admin\n`,
   );
 
   // Create a mock .env.example file
-  fs.writeFileSync(
-    ENV_EXAMPLE_PATH,
-    `DB_HOST=\nDB_PASSWORD=\nDB_USER=\n`
-  );
+  fs.writeFileSync(ENV_EXAMPLE_PATH, `DB_HOST=\nDB_PASSWORD=\nDB_USER=\n`);
 });
 
 afterAll(() => {
@@ -42,7 +39,9 @@ describe("EnvGuard - Environment Validation Tests", () => {
       throwOnError: false,
     });
 
-    expect(result.errors).toContain("Missing required environment variable: API_KEY");
+    expect(result.errors).toContain(
+      "Missing required environment variable: API_KEY",
+    );
   });
 
   it("should detect insecure values in environment variables", () => {
@@ -59,8 +58,12 @@ describe("EnvGuard - Environment Validation Tests", () => {
       throwOnError: false,
     });
 
-    expect(result.warnings).toContain("Insecure value detected for DB_HOST: localhost");
-    expect(result.warnings).toContain("Insecure value detected for DB_PASSWORD: 12345");
+    expect(result.warnings).toContain(
+      "Insecure value detected for DB_HOST: localhost",
+    );
+    expect(result.warnings).toContain(
+      "Insecure value detected for DB_PASSWORD: 12345",
+    );
   });
 
   it("should pass validation if all required variables are present and no insecure values exist", () => {

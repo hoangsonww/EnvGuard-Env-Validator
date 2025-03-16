@@ -68,15 +68,15 @@ import { validateEnv } from "@hoangsonw/env-guard";
 const schema = {
   DB_HOST: { required: true, insecureValues: ["localhost", "127.0.0.1"] },
   DB_PASSWORD: { required: true, insecureValues: ["12345", "password"] },
-  DB_USER: { required: false }
+  DB_USER: { required: false },
 };
 
 validateEnv({
   schema,
-  envFilePath: "./.env",             // Defaults to "./.env"
-  exampleFilePath: "./.env.example",  // Defaults to "./.env.example"
-  allowMissingExampleKeys: false,     // Warn if keys mismatch
-  throwOnError: false                 // Only warn; set to true to throw errors
+  envFilePath: "./.env", // Defaults to "./.env"
+  exampleFilePath: "./.env.example", // Defaults to "./.env.example"
+  allowMissingExampleKeys: false, // Warn if keys mismatch
+  throwOnError: false, // Only warn; set to true to throw errors
 });
 ```
 
@@ -123,7 +123,8 @@ try {
 
 - **`schema: EnvSchema`**  
   An object defining each environment variable’s requirements.  
-  *Example:*
+  _Example:_
+
   ```ts
   {
     DB_HOST: { required: true, insecureValues: ["localhost"] },
@@ -153,6 +154,7 @@ Nothing; it performs validation and logs warnings/errors as configured.
 EnvGuard includes a Jest test suite. To run tests:
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
