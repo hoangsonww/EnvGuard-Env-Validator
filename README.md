@@ -222,7 +222,8 @@ Contributions are welcome! Follow these steps:
 3. **Commit Your Changes**
 4. **Submit a Pull Request**
 
-For major changes, please open an issue first to discuss your ideas.
+For major changes, please open an issue first to discuss your ideas. If you have any questions or need help, feel free to reach out.
+
 ---
 
 ## License
