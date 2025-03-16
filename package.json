@@ -23,13 +23,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/env-guard.git"
+    "url": "https://github.com/hoangsonww/EnvGuard-Env-Validator.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/env-guard/issues"
+    "url": "https://github.com/hoangsonww/EnvGuard-Env-Validator/issues"
   },
-  "homepage": "https://github.com/yourusername/env-guard#readme",
-  "author": "Your Name <you@example.com>",
+  "homepage": "https://github.com/hoangsonww/EnvGuard-Env-Validator#readme",
+  "author": "Son Nguyen",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.0.0",
