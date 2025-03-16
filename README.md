@@ -168,6 +168,23 @@ Test files in the `__tests__` directory demonstrate how EnvGuard validates envir
 
 ---
 
+## Demo Scripts
+
+Run the demo scripts in the `__tests__` directory to see EnvGuard in action:
+
+1. **Run the demo script (with no `basedir` option):**
+   ```bash
+   npm run demoNoBasedir
+   ```
+2. **Run the demo script (with `basedir` option):**
+   ```bash
+    npm run demoWithBasedir
+   ```
+
+The demo scripts will show how EnvGuard validates environment variables and compares `.env` to `.env.example`. Check the console output for validation results.
+
+---
+
 ## Building & Publishing
 
 ### Building
