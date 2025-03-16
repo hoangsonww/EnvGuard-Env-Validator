@@ -1,48 +1,102 @@
 import * as fs from "fs";
 import * as path from "path";
 import dotenv from "dotenv";
-import { EnvGuardOptions, EnvSchema } from "../index.js";
+import { EnvGuardOptions, EnvSchema } from "./index.js";
 
+/**
+ * Attempt to auto-detect the caller script's directory from stack trace,
+ * removing any "file://" prefix.
+ *
+ * @returns The directory of the caller script.
+ */
+function getCallerDirFallback(): string {
+  try {
+    // Get the stack trace to find the caller's directory
+    const origPrepare = Error.prepareStackTrace;
+    Error.prepareStackTrace = (err, stack) => stack;
+    const err = new Error();
+    const stack = err.stack as unknown as NodeJS.CallSite[];
+    Error.prepareStackTrace = origPrepare;
+
+    // stack[0] is getCallerDirFallback
+    // stack[1] is validateEnv
+    // stack[2] is the calling script
+    const callerFrame = stack[2] || stack[1];
+    let callerFile = callerFrame.getFileName();
+
+    // If there's a "file://" prefix, remove it
+    if (callerFile && callerFile.startsWith("file://")) {
+      callerFile = callerFile.replace("file://", "");
+    }
+
+    // Return the directory of the caller file
+    if (callerFile) {
+      return path.dirname(callerFile);
+    }
+  } catch (ex) {
+    // fallback - return current working directory
+  }
+
+  return process.cwd();
+}
+
+/**
+ * Validate environment variables against a schema and .env.example file.
+ *
+ * @param options - The options for validation.
+ */
 export function validateEnv(options: EnvGuardOptions): void {
+  // Destructure options
   const {
     schema,
     envFilePath = "./.env",
     exampleFilePath = "./.env.example",
     allowMissingExampleKeys = false,
     throwOnError = false,
+    baseDir,
   } = options;
 
-  console.log(`[EnvGuard] Loading env file: ${envFilePath}`);
-  // Parse .env
-  const envFileExists = fs.existsSync(envFilePath);
-  if (!envFileExists) {
-    const msg = `[EnvGuard] WARNING: .env file not found at "${envFilePath}"`;
-    if (throwOnError) throw new Error(msg);
+  // If user didn't supply baseDir, attempt to find caller's directory
+  const finalBaseDir = baseDir || getCallerDirFallback();
+
+  // Convert relative paths to absolute paths from finalBaseDir
+  const absoluteEnvPath = path.resolve(finalBaseDir, envFilePath);
+  const absoluteExamplePath = path.resolve(finalBaseDir, exampleFilePath);
+
+  // Load .env file
+  console.log(`[EnvGuard] Loading env file: ${absoluteEnvPath}`);
+  if (!fs.existsSync(absoluteEnvPath)) {
+    const msg = `[EnvGuard] WARNING: .env file not found at "${absoluteEnvPath}"`;
+
+    // If throwOnError is true, throw an error
+    if (throwOnError) {
+      throw new Error(msg);
+    }
+
     console.warn(msg);
   } else {
-    dotenv.config({ path: envFilePath });
+    dotenv.config({ path: absoluteEnvPath });
   }
 
-  // Parse .env.example
-  console.log(`[EnvGuard] Checking .env.example at: ${exampleFilePath}`);
+  // Load .env.example file
+  console.log(`[EnvGuard] Checking .env.example at: ${absoluteExamplePath}`);
   let exampleKeys: string[] = [];
-  if (fs.existsSync(exampleFilePath)) {
-    const exampleContent = fs.readFileSync(exampleFilePath, "utf-8");
-    // naive parse
+
+  if (fs.existsSync(absoluteExamplePath)) {
+    const exampleContent = fs.readFileSync(absoluteExamplePath, "utf-8");
     exampleKeys = parseEnvKeys(exampleContent);
   } else {
-    console.warn(
-      `[EnvGuard] WARNING: .env.example file not found at "${exampleFilePath}"`,
-    );
+    const msg = `[EnvGuard] WARNING: .env.example file not found at "${absoluteExamplePath}"`;
+    if (throwOnError) throw new Error(msg);
+    console.warn(msg);
   }
 
+  // Validate schema
   console.log("[EnvGuard] Validating environment variables...");
   const errors: string[] = [];
-
-  // 1) Check for missing or insecure values as per the schema
   checkSchema(schema, errors, throwOnError);
 
-  // 2) Compare .env.example keys to process.env (if .env.example exists)
+  // Compare .env and .env.example keys
   if (exampleKeys.length > 0) {
     compareExampleKeys(
       exampleKeys,
@@ -52,6 +106,7 @@ export function validateEnv(options: EnvGuardOptions): void {
     );
   }
 
+  // Log results
   if (errors.length > 0) {
     console.warn("[EnvGuard] Validation completed with warnings:");
     errors.forEach((err) => console.warn(" • " + err));
@@ -61,7 +116,13 @@ export function validateEnv(options: EnvGuardOptions): void {
 }
 
 /**
- * Compare .env.example keys to actual process.env keys
+ * Compare the keys in the .env file with the keys in the .env.example file.
+ * If any keys are missing or extra, log a warning.
+ *
+ * @param exampleKeys - The keys from the .env.example file.
+ * @param allowMissingExampleKeys - Whether to allow missing keys in the .env file.
+ * @param errors - The array to store error messages.
+ * @param throwOnError - Whether to throw an error if there are issues.
  */
 function compareExampleKeys(
   exampleKeys: string[],
@@ -69,78 +130,85 @@ function compareExampleKeys(
   errors: string[],
   throwOnError: boolean,
 ) {
+  // Check for missing keys
   for (const exKey of exampleKeys) {
-    if (!process.env.hasOwnProperty(exKey)) {
-      const msg = `[EnvGuard] Missing variable from .env: "${exKey}" is defined in .env.example`;
+    if (!Object.prototype.hasOwnProperty.call(process.env, exKey)) {
+      const msg = `[EnvGuard] Missing variable from .env: "${exKey}" is in .env.example`;
+
       if (throwOnError) {
         errors.push(msg);
-      } else {
-        console.warn(msg);
-      }
+      } else console.warn(msg);
     }
   }
+
+  // Check for extra keys
   if (!allowMissingExampleKeys) {
-    // If .env has keys that .env.example doesn't
     for (const envKey in process.env) {
       if (!exampleKeys.includes(envKey)) {
-        const msg = `[EnvGuard] Extra variable "${envKey}" not found in .env.example. Might be inconsistent.`;
+        const msg = `[EnvGuard] Extra variable "${envKey}" not in .env.example. Might be inconsistent.`;
+
         if (throwOnError) {
           errors.push(msg);
-        } else {
-          console.warn(msg);
-        }
+        } else console.warn(msg);
       }
     }
   }
 }
 
 /**
- * Check schema: each var required? insecure values?
+ * Check the schema for required and insecure values.
+ *
+ * @param schema - The schema to check.
+ * @param errors - The array to store error messages.
+ * @param throwOnError - Whether to throw an error if there are issues.
  */
 function checkSchema(
   schema: EnvSchema,
   errors: string[],
   throwOnError: boolean,
 ) {
+  // Check for required and insecure values
   for (const envVar of Object.keys(schema)) {
-    const isRequired = schema[envVar].required ?? false;
-    const insecureValues = schema[envVar].insecureValues ?? [];
+    // Get the actual value from process.env
+    const { required = false, insecureValues = [] } = schema[envVar];
     const actualValue = process.env[envVar];
 
-    if (isRequired && (actualValue === undefined || actualValue === "")) {
+    // Check for required variable
+    if (required && (!actualValue || actualValue.trim() === "")) {
       const msg = `[EnvGuard] Required env var "${envVar}" is missing or empty!`;
-      if (throwOnError) {
-        errors.push(msg);
-      } else {
-        console.warn(msg);
-      }
+      if (throwOnError) errors.push(msg);
+      else console.warn(msg);
     }
-    // check insecure
+
+    // Check for insecure values
     if (actualValue !== undefined && insecureValues.includes(actualValue)) {
       const msg = `[EnvGuard] Env var "${envVar}" has an insecure value: "${actualValue}"`;
-      if (throwOnError) {
-        errors.push(msg);
-      } else {
-        console.warn(msg);
-      }
+      if (throwOnError) errors.push(msg);
+      else console.warn(msg);
     }
   }
 }
 
 /**
- * Rough parse for lines in .env.example or other text
- * that might represent KEY=VALUE
+ * Parse the keys from the .env file content.
+ *
+ * @param content
  */
 function parseEnvKeys(content: string): string[] {
+  // Split content into lines
   const lines = content.split(/\r?\n/);
   const keys: string[] = [];
+
+  // Parse each line
   for (const line of lines) {
-    // ignoring comments and empty
-    if (!line.trim() || line.trim().startsWith("#")) {
+    const trimmed = line.trim();
+
+    if (!trimmed || trimmed.startsWith("#")) {
       continue;
     }
-    // e.g. KEY=VALUE
-    const [key] = line.split("=");
+
+    const [key] = trimmed.split("=");
+
     if (key) {
       keys.push(key.trim());
     }
