@@ -113,6 +113,8 @@ try {
 }
 ```
 
+> Note: The script might also parse environment variables from outside the `.env` file if they are already set in the environment of your machine or Node.js process. This can lead to some warnings in the console, if they are not defined in the `.env.example` file. You can safely ignore them.
+
 ---
 
 ## API Reference
