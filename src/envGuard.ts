@@ -130,29 +130,37 @@ function compareExampleKeys(
   errors: string[],
   throwOnError: boolean,
 ) {
-  // Check for missing keys
-  for (const exKey of exampleKeys) {
-    if (!Object.prototype.hasOwnProperty.call(process.env, exKey)) {
-      const msg = `[EnvGuard] Missing variable from .env: "${exKey}" is in .env.example`;
+  // helper to check presence in process.env
+  const hasEnvVar = (key: string) =>
+    Object.prototype.hasOwnProperty.call(process.env, key);
 
-      if (throwOnError) {
-        errors.push(msg);
-      } else console.warn(msg);
+  // helper to report a message either by pushing or warning
+  const report = (msg: string) => {
+    if (throwOnError) {
+      errors.push(msg);
+    } else {
+      console.warn(msg);
     }
-  }
+  };
 
-  // Check for extra keys
-  if (!allowMissingExampleKeys) {
-    for (const envKey in process.env) {
-      if (!exampleKeys.includes(envKey)) {
-        const msg = `[EnvGuard] Extra variable "${envKey}" not in .env.example. Might be inconsistent.`;
-
-        if (throwOnError) {
-          errors.push(msg);
-        } else console.warn(msg);
-      }
+  // 1) Missing from .env
+  exampleKeys.forEach((key) => {
+    if (!hasEnvVar(key)) {
+      report(`[EnvGuard] Missing variable from .env: "${key}" is in .env.example`);
     }
+  });
+
+  // 2) Extra in .env
+  if (allowMissingExampleKeys) {
+    return;
   }
+  Object.keys(process.env).forEach((key) => {
+    if (!exampleKeys.includes(key)) {
+      report(
+        `[EnvGuard] Extra variable "${key}" not in .env.example. Might be inconsistent.`
+      );
+    }
+  });
 }
 
 /**
